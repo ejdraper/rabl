@@ -52,6 +52,7 @@ module Rabl
     attr_accessor :replace_empty_string_values_with_nil_values
     attr_accessor :exclude_nil_values
     attr_accessor :exclude_empty_values_in_collections
+    attr_accessor :profiler
 
     DEFAULT_XML_OPTIONS = { :dasherize  => true, :skip_types => false }
 
@@ -81,6 +82,7 @@ module Rabl
       @replace_empty_string_values_with_nil_values  = false
       @exclude_nil_values                           = false
       @exclude_empty_values_in_collections          = false
+      @profiler                                     = nil
     end
 
     # @return The JSON engine used to encode Rabl templates into JSON
@@ -116,6 +118,18 @@ module Rabl
     # Returns merged default and inputted xml options
     def default_xml_options
       @_default_xml_options ||= @xml_options.reverse_merge(DEFAULT_XML_OPTIONS)
+    end
+
+    def profile!(type, key, &block)
+      if self.profiler.nil?
+        result = yield
+      else
+        start = Time.now
+        result = yield
+        timer = Time.now - start
+        self.profiler.call(type, key, timer)
+      end
+      result
     end
   end
 end

@@ -137,7 +137,9 @@ module Rabl
       def attribute(name, options = {})
         return unless @_object && attribute_present?(name) && resolve_condition(options)
 
-        attribute = data_object_attribute(name)
+        attribute = Rabl.configuration.profile!(:attribute, name) do
+          data_object_attribute(name)
+        end
         name = (options[:as] || name).to_sym
         @_result[name] = attribute
       end
@@ -149,7 +151,9 @@ module Rabl
       def node(name, options = {}, &block)
         return unless resolve_condition(options)
 
-        result = block.call(@_object)
+        result = Rabl.configuration.profile!(:node, name) do
+          block.call(@_object)
+        end
         if name.present?
           @_result[name.to_sym] = result
         elsif result.is_a?(Hash) # merge hash into root hash
